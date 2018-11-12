@@ -1,10 +1,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Jet Pro Engine Analysis Tool
-%Daniel Sagan, Eddie, and Kyle
+%Daniel Sagan, Eddie Li, and Kyle Neville
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+function [TSFC] = Jet_Engine_Analysis_Tool(pi_c, pi_f, beta, f, f_ab, b)
+global TSFC;
+
 %Flight Conditions      %Units
-%syms M_a T_a P_a P_oa T_oa gamma_a;
 M_a = 1.5;
 gamma_a = 1.4;
 R = 8314.46/28.8;
@@ -64,9 +66,13 @@ eta_b = 0.98;
 Q_r = 43e+6;
 f = 0.02;
 b = 0.1;
+To_o4_max = 1500;
+b_max = 0.1;
+C_b = 500;
 
-T_o4 = (Q_r*f*eta_b+T_o3*(1-b)*c_pc)/(c_pb*(1+f-b))
-P_o4 = P_o3*pi_b
+T_o4 = (Q_r*f*eta_b+T_o3*(1-b)*c_pc)/(c_pb*(1+f-b));
+P_o4 = P_o3*pi_b;
+T_o4_max = To_o4_max + C_b*(b/b_max)^0.5;
 
 %% 4-->51 (Through the HP Turbine)
 gamma_HPT = gamma_b;
@@ -99,6 +105,7 @@ pi_ab = 0.97;
 eta_ab = 0.98;
 Q_r = 43e+6;
 f_ab = 0.02;
+T_o6_max = 2200;
 
 T_o6 = Q_r*f_ab*eta_ab/c_pab/(1+f+f_ab)+T_o52*(1+f)*c_pLPT/c_pab/(1+f+f_ab);
 P_o6 = P_o52*pi_ab;
@@ -121,7 +128,7 @@ T_eM = T_o7*(1-eta_nM*(1-(P_a/P_o7)^((gamma_n-1)/gamma_n)));
 u_eM = sqrt(2*eta_nM*c_pnM*T_o7*(1-(P_a/P_o7)^((gamma_n-1)/gamma_n)));
 
 %% 6 --> eH
-gamma_nH = gamma_ab
+gamma_nH = gamma_ab;
 eta_nH = 0.95;
 c_pnH = c_pab;
 
@@ -131,7 +138,7 @@ u_eH = sqrt(2*eta_nH*c_pnH*T_o6*(1-(P_a/P_o6)^((gamma_nH-1)/gamma_nH)));
 
 specificThrustH = ((1+f+f_ab)*u_eH-(1)*M_a*sqrt(gamma_a*T_a*8314.46/28.8))
 %% 3f --> eC
-gamma_nC = gamma_f
+gamma_nC = gamma_f;
 eta_nC = 0.97;
 c_pnC = c_pf;
 
@@ -139,14 +146,21 @@ T_eC = T_o3f*(1-eta_nC*(1-(P_a/P_o3f)^((gamma_nC-1)/gamma_nC)));
 
 u_eC = sqrt(2*eta_nC*c_pf*T_o3f*(1-(P_a/P_o3f)^((gamma_nC-1)/gamma_nC)));
 
-specificThrustC = ((beta)*u_eC-(beta)*M_a*sqrt(gamma_a*T_a*8314.46/28.8))
+specificThrustC = ((beta)*u_eC-(beta)*M_a*sqrt(gamma_a*T_a*8314.46/28.8));
 %% Specific Thrust (Mixed)
 
-specificThrustM = ((1+beta+f+f_ab)*u_eM-(1+beta)*M_a*sqrt(gamma_a*T_a*8314.46/28.8))-Drag_f
+specificThrustM = ((1+beta+f+f_ab)*u_eM-(1+beta)*M_a*sqrt(gamma_a*T_a*8314.46/28.8))-Drag_f;
 
-TSFCM = (f+f_ab)/specificThrustM
+TSFCM = (f+f_ab)/specificThrustM;
 
 %% Specific Thrust (Hot and Cold)
 
 specificThrustHC = specificThrustH+specificThrustC-Drag_f;
-TSFCHC = (f+f_ab)/specificThrustHC
+TSFCHC = (f+f_ab)/specificThrustHC;
+
+%% Outputs
+specificThrust = specificThrustM;
+TSFC = TSFCM;
+
+end
+
