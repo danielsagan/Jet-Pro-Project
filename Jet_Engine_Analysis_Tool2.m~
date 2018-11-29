@@ -3,12 +3,12 @@
 % Daniel Sagan, Eddie Li, and Kyle Neville % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [TSFC] = Jet_Engine_Analysis_Tool(pi_c, pi_f, beta, f, f_ab, b)
+function [TSFC] = Jet_Engine_Analysis_Tool2(pi_c, pi_f, beta, f, f_ab, b)
 %Flight Conditions%%%%%%Units%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-M_a = 0;
-T_a = 273;              %K
-P_a = 100;              %kPa
-specificThrustConstraint = 2750 %N
+M_a = 0.87;
+T_a = 225;              %K
+P_a = 25;               %kPa
+specificThrustConstraint = 850;
 fan = true;
 afterburner = true;
 bleed = true;
@@ -178,7 +178,7 @@ else
 end
 
 %% Constraint Evaluation
-global constraints; %Constraints
+global constraints2; %Constraints
 constraints = [pi_c*pi_f-55, T_o4-T_o4_max, T_o6-2200, -specificThrust*100, (specificThrustConstraint-specificThrust)];
 end
 
