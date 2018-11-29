@@ -8,10 +8,10 @@ function [TSFC] = Jet_Engine_Analysis_Tool(pi_c, pi_f, beta, f, f_ab, b)
 M_a = 2.3;
 T_a = 215;              %K
 P_a = 12;               %kPa
-fan = true;
-afterburner = true;
-bleed = true;
-mixed = true;
+Fan = True;
+Afterburner = True;
+Bleed = True;
+Mixed = True;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 gamma_a = 1.4;          %gamma atmosphere
 R = 8314.46/28.8;
@@ -34,13 +34,12 @@ T_o2 = T_oa;
 P_o2 = P_a*(1+eta_d*(gamma_a-1)/2*M_a^2)^(gamma_a/(gamma_a-1))*pi_ds;
 
 %2-->3f (Through the fan)
-if ~fan
-    beta = 0;
-end
+%beta = 2;
 gamma_f = gamma_a;
 C_beta = 200;
 c_pf = 8314.46/28.8*gamma_f/(gamma_f-1);
 e_f = 0.95;
+%pi_f = 1.3;
 eta_f = (pi_f^((gamma_f-1)/gamma_f)-1)/((pi_f^((gamma_f-1)/gamma_f/e_f)-1));
 
 P_o3f = P_o2*pi_f;
