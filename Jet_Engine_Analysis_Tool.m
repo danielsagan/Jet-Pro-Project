@@ -4,15 +4,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [TSFC] = Jet_Engine_Analysis_Tool(pi_c, pi_f, beta, f, f_ab, b)
-global TSFC;
-
 %Flight Conditions      %Units
-M_a = 1.5;
-gamma_a = 1.4;
+M_a = 2.3;
+gamma_a = 1.4;          %gamma atmosphere
 R = 8314.46/28.8;
-T_a = 220;              %K
-P_a = 20;               %kPa
-T_oa = T_a*(1+(gamma_a-1)/2*M_a^2);
+T_a = 215;              %K
+P_a = 12;               %kPa
+T_oa = T_a*(1+(gamma_a-1)/2*M_a^2);                         %total pressure
 P_oa = P_a*(1+(gamma_a-1)/2*M_a^2)^(gamma_a/(gamma_a-1));
 
 
@@ -27,16 +25,16 @@ else
     quit
 end
 
-T_o2 = T_oa
-P_o2 = P_a*(1+eta_d*(gamma_a-1)/2*M_a^2)^(gamma_a/(gamma_a-1))*pi_ds
+T_o2 = T_oa;
+P_o2 = P_a*(1+eta_d*(gamma_a-1)/2*M_a^2)^(gamma_a/(gamma_a-1))*pi_ds;
 
 %2-->3f (Through the fan)
-beta = 2;
+%beta = 2;
 gamma_f = gamma_a;
 C_beta = 200;
 c_pf = 8314.46/28.8*gamma_f/(gamma_f-1);
 e_f = 0.95;
-pi_f = 1.3;
+%pi_f = 1.3;
 eta_f = (pi_f^((gamma_f-1)/gamma_f)-1)/((pi_f^((gamma_f-1)/gamma_f/e_f)-1));
 
 P_o3f = P_o2*pi_f;
@@ -50,7 +48,7 @@ Drag_f = C_beta*M_a^2*(P_a/101.325)*beta^1.5;
 gamma_c = gamma_f;
 c_pc = 8314.46/28.8*gamma_c/(gamma_c-1);
 e_c = 0.95;
-pi_c = 20;
+%pi_c = 20;
 eta_c = (pi_c^((gamma_c-1)/gamma_c)-1)/((pi_c^((gamma_c-1)/gamma_c/e_c)-1));
 
 P_o3 = P_o3f*pi_c;
@@ -64,15 +62,13 @@ c_pb = 8314.46/28.8*gamma_b/(gamma_b-1);
 pi_b = 0.97;
 eta_b = 0.98;
 Q_r = 43e+6;
-f = 0.02;
-b = 0.1;
 To_o4_max = 1500;
 b_max = 0.1;
 C_b = 500;
 
 T_o4 = (Q_r*f*eta_b+T_o3*(1-b)*c_pc)/(c_pb*(1+f-b));
 P_o4 = P_o3*pi_b;
-T_o4_max = To_o4_max + C_b*(b/b_max)^0.5;
+T_o4_max = To_o4_max + C_b*(b/b_max)^0.5
 
 %% 4-->51 (Through the HP Turbine)
 gamma_HPT = gamma_b;
@@ -104,7 +100,7 @@ c_pab = 8314.46/28.8*gamma_ab/(gamma_ab-1);
 pi_ab = 0.97;
 eta_ab = 0.98;
 Q_r = 43e+6;
-f_ab = 0.02;
+%f_ab = 0.0;
 T_o6_max = 2200;
 
 T_o6 = Q_r*f_ab*eta_ab/c_pab/(1+f+f_ab)+T_o52*(1+f)*c_pLPT/c_pab/(1+f+f_ab);
@@ -136,7 +132,7 @@ T_eH = T_o6*(1-eta_nH*(1-(P_a/P_o6)^((gamma_nH-1)/gamma_nH)));
 
 u_eH = sqrt(2*eta_nH*c_pnH*T_o6*(1-(P_a/P_o6)^((gamma_nH-1)/gamma_nH)));
 
-specificThrustH = ((1+f+f_ab)*u_eH-(1)*M_a*sqrt(gamma_a*T_a*8314.46/28.8))
+specificThrustH = ((1+f+f_ab)*u_eH-(1)*M_a*sqrt(gamma_a*T_a*8314.46/28.8));
 %% 3f --> eC
 gamma_nC = gamma_f;
 eta_nC = 0.97;
@@ -159,8 +155,11 @@ specificThrustHC = specificThrustH+specificThrustC-Drag_f;
 TSFCHC = (f+f_ab)/specificThrustHC;
 
 %% Outputs
-specificThrust = specificThrustM;
-TSFC = TSFCM;
+specificThrust = specificThrustM
+TSFC = TSFCM*35304;
 
+%% Constraint Evaluation
+global constraints; %Constraints
+constraints = [pi_c*pi_f-55, T_o4-T_o4_max, T_o6-2200, -specificThrust*100, (750-specificThrust)];
 end
 

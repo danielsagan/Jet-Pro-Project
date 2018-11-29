@@ -17,11 +17,15 @@ for i = 1:1
     
     options = optimoptions('fmincon','Display','iter', 'Algorithm', 'sqp');
     [x, fval, exitflag] = fmincon(@TSFCFun, x0, [],[],[],[],lb, ub, @mycon, options);
+    %[x, fval, exitflag] = ga(@TSFCFun, 6, [],[],[],[],lb, ub, func);
+
     TSFC=fval;
     if ((TSFC < bestTSFC) && (TSFC > 0) && ((exitflag == 1) || (exitflag == 0)))
+
         bestTSFC = TSFC;
-        bestx = x;
-        bestx_x0 = x0;
+        optimalx = x;
+        optimalx_xo = xo;
+
     end
     
 end
