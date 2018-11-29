@@ -78,7 +78,7 @@ end
 
 T_o4 = (Q_r*f*eta_b+T_o3*(1-b)*c_pc)/(c_pb*(1+f-b));
 P_o4 = P_o3*pi_b;
-T_o4_max = To_o4_max + C_b*(b/b_max)^0.5
+T_o4_max = To_o4_max + C_b*(b/b_max)^0.5;
 
 %% 4-->51 (Through the HP Turbine)
 gamma_HPT = gamma_b;
@@ -170,10 +170,10 @@ TSFCHC = (f+f_ab)/specificThrustHC;
 
 %% Outputs
 if mixed
-    specificThrust = specificThrustM
+    specificThrust = specificThrustM;
     TSFC = TSFCM;
 else
-    specificThrust = specificThrustH
+    specificThrust = specificThrustHC;
     TSFC = TSFCHC;  
 end
 

@@ -24,7 +24,7 @@ for i = 1:10
 end
 
 function TSFC = TSFCFun(x)
-alpha = 0.1
+alpha = 0.1;
 TSFC = alpha*Jet_Engine_Analysis_Tool(x(1), x(2), x(3), x(4), x(5), x(8)) + (1-alpha)*Jet_Engine_Analysis_Tool2(x(1), x(2), x(3), x(6), x(7), x(8));
 end
 

@@ -2,83 +2,97 @@
 %      Jet Pro Engine Analysis Tool        %
 % Daniel Sagan, Eddie Li, and Kyle Neville % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%Variable Names are as follows:
+%T for Temperature
+%P for Pressure
+%pi for compression ratio
+%eta for efficiency
+%beta for bypass ratio
+%gamma for ratio of specific heats
+%f for fuel ratio, f_ab for afterburner fuel ratio
+%b for bleed ratio
+%c_p for specific heat capacity
+%w for work
+%These are given the subscript _o to denote stagnation properties and
+%numbers to denote station
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [TSFC] = Jet_Engine_Analysis_Tool(pi_c, pi_f, beta, f, f_ab, b)
 %Flight Conditions%%%%%%Units%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-M_a = 0;
-T_a = 273;              %K
-P_a = 100;              %kPa
-specificThrustConstraint = 2750 %N
-fan = true;
-afterburner = true;
-bleed = true;
-mixed = true;
+    %This is where all of the important parameters are changed. The rest of the
+    %code should be the same in all cases.
+M_a = 0;                            %Mach number
+T_a = 273;                          %K
+P_a = 100;                          %kPa
+specificThrustConstraint = 2750;    %N
+fan = true;             %Sets if there is a fan. Set to true for turbofan and false for turbojet or ramjet
+afterburner = true;     %Sets if there is an afterburner. 
+bleed = true;           %Sets if there is bleed air
+mixed = false;          %Sets if there is a mixer or not.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 gamma_a = 1.4;          %gamma atmosphere
-R = 8314.46/28.8;
-T_oa = T_a*(1+(gamma_a-1)/2*M_a^2);                         %total pressure
-P_oa = P_a*(1+(gamma_a-1)/2*M_a^2)^(gamma_a/(gamma_a-1));
+R = 8314.46/28.8;                                           %Specific Gas constanst of air; doesn't change
+T_oa = T_a*(1+(gamma_a-1)/2*M_a^2);                         %total temperature of the atmosphere
+P_oa = P_a*(1+(gamma_a-1)/2*M_a^2)^(gamma_a/(gamma_a-1));   %total pressure of the atmosphere
 
 
-% a-->2 (Through the diffuser)
+%% a-->2 (Through the diffuser)
 eta_d = 0.92;
-if M_a <= 1
+if M_a <= 1               %Considers the effects of Shock compression; if subsonic, there is no stagnation pressure loss
     pi_ds = 1;
-elseif M_a > 1 && M_a < 5
+elseif M_a > 1 && M_a < 5   %Otherwise there is some loss in stagnation pressure as a function of mach number
     pi_ds = 1 - 0.075*(M_a-1)^1.35;
 else
     print("The code is invalid for this Mach Number");
     quit
 end
 
-T_o2 = T_oa;
-P_o2 = P_a*(1+eta_d*(gamma_a-1)/2*M_a^2)^(gamma_a/(gamma_a-1))*pi_ds;
+T_o2 = T_oa;                %Total temperature after the diffuser
+P_o2 = P_a*(1+eta_d*(gamma_a-1)/2*M_a^2)^(gamma_a/(gamma_a-1))*pi_ds;%Total pressure after the diffuser
 
-%2-->3f (Through the fan)
-if ~fan
+%% 2-->3f (Through the fan)
+if ~fan                                         %if there is no fan, then sets bypass to zero, effectively making the engine a turbojet
     beta = 0;
 end
 gamma_f = gamma_a;
-C_beta = 200;
-c_pf = 8314.46/28.8*gamma_f/(gamma_f-1);
+C_beta = 200;                                   %Coefficient of drag due to fan
+c_pf = 8314.46/28.8*gamma_f/(gamma_f-1); 
 e_f = 0.95;
 eta_f = (pi_f^((gamma_f-1)/gamma_f)-1)/((pi_f^((gamma_f-1)/gamma_f/e_f)-1));
 
 P_o3f = P_o2*pi_f;
 T_o3f = T_o2*(1+1/eta_f*(pi_f^((gamma_f-1)/gamma_f)-1));
 
-w_f = -c_pf*(T_o3f-T_o2)*(1+beta);
+w_f = -c_pf*(T_o3f-T_o2)*(1+beta);              %Work done by the flow on the fan (which is negative)
 
-Drag_f = C_beta*M_a^2*(P_a/101.325)*beta^1.5;
+Drag_f = C_beta*M_a^2*(P_a/101.325)*beta^1.5;   %Drag due to having a fan
 
 %% 3f-->3 (Through the compressor)
 gamma_c = gamma_f;
 c_pc = 8314.46/28.8*gamma_c/(gamma_c-1);
 e_c = 0.95;
-%pi_c = 20;
 eta_c = (pi_c^((gamma_c-1)/gamma_c)-1)/((pi_c^((gamma_c-1)/gamma_c/e_c)-1));
 
 P_o3 = P_o3f*pi_c;
 T_o3 = T_o3f*(1+1/eta_c*(pi_c^((gamma_c-1)/gamma_c)-1));
 
-w_c = -c_pc*T_o3f/eta_c*(pi_c^((gamma_c-1)/gamma_c)-1);
+w_c = -c_pc*T_o3f/eta_c*(pi_c^((gamma_c-1)/gamma_c)-1); %Work done by the flow on the compressor
 
 %% 3-->4 (Through the combustor)
 gamma_b = 1.33;
 c_pb = 8314.46/28.8*gamma_b/(gamma_b-1);
 pi_b = 0.97;
 eta_b = 0.98;
-Q_r = 43e+6;
-To_o4_max = 1500;
+Q_r = 43e+6;                            %Energy density of the fuel J/kg
+To_o4_max = 1500;                       %Maximum temperature in the combustor without bleed
 b_max = 0.1;
-C_b = 500;
-if ~bleed
+C_b = 500;                              %Coefficient relating bleed air to increase in T_o4_max
+if ~bleed                               %Sets if there is bleed air
     b = 0;
 end
 
 T_o4 = (Q_r*f*eta_b+T_o3*(1-b)*c_pc)/(c_pb*(1+f-b));
 P_o4 = P_o3*pi_b;
-T_o4_max = To_o4_max + C_b*(b/b_max)^0.5
+T_o4_max = To_o4_max + C_b*(b/b_max)^0.5;   %Maximum T_o4 Accounting for bleed air
 
 %% 4-->51 (Through the HP Turbine)
 gamma_HPT = gamma_b;
@@ -120,7 +134,7 @@ if ~afterburner
     P_o6 = P_o52;
 end
 
-%% 6+3f --> 7 (Through the mixer)
+%% 6+3f --> 7 (Through the bleed air mixer)
 gamma_m = (gamma_LPT+beta*gamma_f)/(1+beta);
 c_pm = 8314.46/28.8*gamma_m/(gamma_m-1);
 pi_em = 0.85;
@@ -137,7 +151,7 @@ T_eM = T_o7*(1-eta_nM*(1-(P_a/P_o7)^((gamma_n-1)/gamma_n)));
 
 u_eM = sqrt(2*eta_nM*c_pnM*T_o7*(1-(P_a/P_o7)^((gamma_n-1)/gamma_n)));
 
-%% 6 --> eH
+%% 6 --> eH (Through the Hot Nozzle)
 gamma_nH = gamma_ab;
 eta_nH = 0.95;
 c_pnH = c_pab;
@@ -147,7 +161,7 @@ T_eH = T_o6*(1-eta_nH*(1-(P_a/P_o6)^((gamma_nH-1)/gamma_nH)));
 u_eH = sqrt(2*eta_nH*c_pnH*T_o6*(1-(P_a/P_o6)^((gamma_nH-1)/gamma_nH)));
 
 specificThrustH = ((1+f+f_ab)*u_eH-(1)*M_a*sqrt(gamma_a*T_a*8314.46/28.8));
-%% 3f --> eC
+%% 3f --> eC (Through the Cold Nozzle
 gamma_nC = gamma_f;
 eta_nC = 0.97;
 c_pnC = c_pf;
@@ -163,17 +177,17 @@ specificThrustM = ((1+beta+f+f_ab)*u_eM-(1+beta)*M_a*sqrt(gamma_a*T_a*8314.46/28
 
 TSFCM = (f+f_ab)/specificThrustM;
 
-%% Specific Thrust (Hot and Cold)
+%% Specific Thrust (Hot and Cold Separate)
 
 specificThrustHC = specificThrustH+specificThrustC-Drag_f;
 TSFCHC = (f+f_ab)/specificThrustHC;
 
 %% Outputs
 if mixed
-    specificThrust = specificThrustM
+    specificThrust = specificThrustM;
     TSFC = TSFCM;
 else
-    specificThrust = specificThrustH
+    specificThrust = specificThrustHC;
     TSFC = TSFCHC;  
 end
 
