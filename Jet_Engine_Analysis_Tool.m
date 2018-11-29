@@ -27,8 +27,8 @@ specificThrustConstraint = 2750;    %N
 fan = true;             %Sets if there is a fan. Set to true for turbofan and false for turbojet or ramjet
 afterburner = true;     %Sets if there is an afterburner. 
 bleed = true;           %Sets if there is bleed air
-mixed = false;          %Sets if there is a mixer or not.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+mixed = true;          %Sets if there is a mixer or not.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 gamma_a = 1.4;          %gamma atmosphere
 R = 8314.46/28.8;                                           %Specific Gas constanst of air; doesn't change
 T_oa = T_a*(1+(gamma_a-1)/2*M_a^2);                         %total temperature of the atmosphere
@@ -132,6 +132,7 @@ P_o6 = P_o52*pi_ab;
 if ~afterburner
     T_o6 = T_052;
     P_o6 = P_o52;
+    f_ab = 0;
 end
 
 %% 6+3f --> 7 (Through the bleed air mixer)
