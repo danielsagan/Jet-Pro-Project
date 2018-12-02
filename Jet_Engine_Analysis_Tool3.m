@@ -16,17 +16,17 @@
 %These are given the subscript _o to denote stagnation properties and
 %numbers to denote station
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [TSFC] = Jet_Engine_Analysis_Tool(pi_c, pi_f, beta, f, f_ab, b)
-%Conditions%%%%%%Units%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [specificThrust] = Jet_Engine_Analysis_Tool3(pi_c, pi_f, beta, f, f_ab, b)
+%Flight Conditions%%%%%%Units%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %This is where all of the important parameters are changed. The rest of the
     %code should be the same in all cases.
-M_a = 0;                            %Mach number
-T_a = 273;                          %K
-P_a = 100;                          %kPa
-specificThrustConstraint = 2750;    %N
+M_a = 0.87;                            %Mach number
+T_a = 225;                          %K
+P_a = 25;                          %kPa
+specificThrustConstraint = 300;    %N
 fan = true;             %Sets if there is a fan. Set to true for turbofan and false for turbojet or ramjet
 afterburner = false;     %Sets if there is an afterburner. 
-bleed = true;           %Sets if there is bleed air
+bleed = false;           %Sets if there is bleed air
 mixed = true;          %Sets if there is a mixer or not.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 gamma_a = 1.4;          %gamma atmosphere
@@ -124,6 +124,7 @@ c_pab = 8314.46/28.8*gamma_ab/(gamma_ab-1);
 pi_ab = 0.97;
 eta_ab = 0.98;
 Q_r = 43e+6;
+
 T_o6_max = 2200;
 
 T_o6 = Q_r*f_ab*eta_ab/c_pab/(1+f+f_ab)+T_o52*(1+f)*c_pLPT/c_pab/(1+f+f_ab);
@@ -134,12 +135,12 @@ if ~afterburner
     f_ab = 1e-22;
 end
 
-%% 6+3f --> 7 (Through the mixer)
+%% 6+3f --> 7 (Through the bleed air mixer)
 gamma_m = (gamma_LPT+beta*gamma_f)/(1+beta);
 c_pm = 8314.46/28.8*gamma_m/(gamma_m-1);
 pi_em = 0.85;
 
-T_o7 = (T_o6*(1+f+f_ab)+beta*T_o3f)/(1+f+f_ab+beta);
+T_o7 = (T_o6+beta*T_o3f)/(1+beta);
 P_o7 = pi_em*T_o7^(gamma_m/(gamma_m-1))/(T_o6^(gamma_m/(gamma_m-1)/(1+beta))*T_o3f^(gamma_m/(gamma_m-1)*beta/(1+beta)))*P_o6^(1/(1+beta))*P_o3f^(beta/(1+beta));
 
 %% 7 --> eM (Through the Mixed Nozzle)
@@ -193,6 +194,6 @@ end
 
 %% Constraint Evaluation
 global constraints; %Constraints
-constraints = [pi_c*pi_f-55, T_o4-T_o4_max, T_o6-2200, -specificThrust*100, 1000*(specificThrustConstraint-specificThrust)];
+constraints = [pi_c*pi_f-55, T_o4-T_o4_max, T_o6-2200, -specificThrust*100];
 end
 

@@ -16,16 +16,14 @@
 %These are given the subscript _o to denote stagnation properties and
 %numbers to denote station
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [TSFC] = Jet_Engine_Analysis_Tool(pi_c, pi_f, beta, f, f_ab, b)
-%Conditions%%%%%%Units%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [TSFC, specificThrust] = Jet_Engine_Analysis_Tool(pi_c, pi_f, beta, f, f_ab, b, M_a, T_a, P_a)
+%Flight Conditions%%%%%%Units%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %This is where all of the important parameters are changed. The rest of the
     %code should be the same in all cases.
-M_a = 0;                            %Mach number
-T_a = 273;                          %K
-P_a = 100;                          %kPa
-specificThrustConstraint = 2750;    %N
+                            %Mach number                        %kPa
+specificThrustConstraint = 850;    %N
 fan = true;             %Sets if there is a fan. Set to true for turbofan and false for turbojet or ramjet
-afterburner = false;     %Sets if there is an afterburner. 
+afterburner = true;     %Sets if there is an afterburner. 
 bleed = true;           %Sets if there is bleed air
 mixed = true;          %Sets if there is a mixer or not.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -134,7 +132,7 @@ if ~afterburner
     f_ab = 1e-22;
 end
 
-%% 6+3f --> 7 (Through the mixer)
+%% 6+3f --> 7 (Through the bleed air mixer)
 gamma_m = (gamma_LPT+beta*gamma_f)/(1+beta);
 c_pm = 8314.46/28.8*gamma_m/(gamma_m-1);
 pi_em = 0.85;
